@@ -2,8 +2,8 @@ require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
   def setup
-    @user = User.new(name: "Example User", email: "user@example.com",
-                     password: "foobar", password_confirmation: "foobar")
+    @user = User.new(name: 'Example User', email: 'user@example.com',
+                     password: 'foobar', password_confirmation: 'foobar')
   end
 
   test 'name should not be too long' do
@@ -30,21 +30,32 @@ class UserTest < ActiveSupport::TestCase
     assert_not duplicate_user.valid?
   end
 
-    test "email addresses should be saved as lowercase" do
-    mixed_case_email = "Foo@ExAMPle.CoM"
+  test 'email addresses should be saved as lowercase' do
+    mixed_case_email = 'Foo@ExAMPle.CoM'
     @user.email = mixed_case_email
     @user.save
     assert_equal mixed_case_email.downcase, @user.reload.email
   end
-  
-    test "password should be present (nonblank)" do
-    @user.password = @user.password_confirmation = " " * 6
+
+  test 'password should be present (nonblank)' do
+    @user.password = @user.password_confirmation = ' ' * 6
     assert_not @user.valid?
   end
 
-  test "password should have a minimum length" do
-    @user.password = @user.password_confirmation = "a" * 5
+  test 'password should have a minimum length' do
+    @user.password = @user.password_confirmation = 'a' * 5
     assert_not @user.valid?
   end
 
+  # 渡されたトークンがダイジェストと一致したらtrueを返す
+  def authenticated?(remember_token)
+    return false if remember_digest.nil?
+
+    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  end
+
+  # ユーザーのログイン情報を破棄する
+  def forget
+    update_attribute(:remember_digest, nil)
+  end
 end
