@@ -10,7 +10,7 @@ class User < ApplicationRecord
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: true
   has_secure_password
-  
+
   # 10章の「allow_nil: true」（ユーザー編集時にパスワード空欄を許可する設定）をキープ
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
@@ -42,10 +42,11 @@ class User < ApplicationRecord
   end
 
   # 渡されたトークンがダイジェストと一致したらtrueを返す
-  def authenticated?(remember_token)
-    # 9章のログアウト問題を防ぐガード句をキープ
-    return false if remember_digest.nil?
-    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  def authenticated?(attribute, token)
+    digest = send("#{attribute}_digest")
+    return false if digest.nil?
+
+    BCrypt::Password.new(digest).is_password?(token)
   end
 
   # ユーザーのログイン情報を破棄する
