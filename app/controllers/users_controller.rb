@@ -10,6 +10,7 @@ class UsersController < ApplicationController
   def show
     @user = User.find(params[:id])
     redirect_to root_url and return unless @user.activated?
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
 
   def new
@@ -20,6 +21,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     if @user.save
       @user.send_activation_email
+      @microposts = @user.microposts.paginate(page: params[:page])
       flash[:info] = 'Please check your email to activate your account.'
       redirect_to root_url
     else
@@ -55,15 +57,6 @@ class UsersController < ApplicationController
   end
 
   # beforeフィルタ
-
-  # ログイン済みユーザーかどうか確認
-  def logged_in_user
-    return if logged_in?
-
-    store_location
-    flash[:danger] = 'Please log in.'
-    redirect_to login_url, status: :see_other
-  end
 
   # 正しいユーザーかどうか確認
   def correct_user
