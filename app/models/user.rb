@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  attr_accessor :remember_token, :activation_token
+  attr_accessor :remember_token, :activation_token, :reset_token
 
   before_save   :downcase_email
   before_create :create_activation_digest
@@ -11,7 +11,6 @@ class User < ApplicationRecord
                     uniqueness: true
   has_secure_password
 
-  # 10章の「allow_nil: true」（ユーザー編集時にパスワード空欄を許可する設定）をキープ
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
   # 渡された文字列のハッシュ値を返す
@@ -63,6 +62,21 @@ class User < ApplicationRecord
   # 有効化用のメールを送信する
   def send_activation_email
     UserMailer.account_activation(self).deliver_now
+  end
+
+  # パスワード再設定の期限が切れている場合はtrueを返す
+  def password_reset_expired?
+    reset_sent_at < 2.hours.ago
+  end
+
+  def create_reset_digest
+    self.reset_token = User.new_token
+    update_columns(reset_digest: User.digest(reset_token), reset_sent_at: Time.zone.now)
+  end
+
+  # パスワード再設定のメールを送信する
+  def send_password_reset_email
+    UserMailer.password_reset(self).deliver_now
   end
 
   private
