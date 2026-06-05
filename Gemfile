@@ -44,5 +44,9 @@ group :test do
   gem 'webdrivers',               '5.2.0'
 end
 
+group :production do
+  gem 'mailgun-ruby', "1.3.10"
+end
+
 # Windows ではタイムゾーン情報用の tzinfo-data gem を含める必要があります
 # gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
