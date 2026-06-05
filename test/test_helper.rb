@@ -1,12 +1,13 @@
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
-require 'rails/test_help'
+require 'rails/test_help' # ← これが必ず fixtures よりも上に必要です！
 require 'minitest/reporters'
 Minitest::Reporters.use!
 
 class ActiveSupport::TestCase
   # 指定のワーカー数でテストを並列実行する
   parallelize(workers: :number_of_processors)
+
   # test/fixtures/*.ymlのfixtureをすべてセットアップする
   fixtures :all
 
@@ -15,14 +16,14 @@ class ActiveSupport::TestCase
     !session[:user_id].nil?
   end
 
-  # テストユーザーとしてログインする
+  # 単体テスト用のログインヘルパー（セッションを直接書き換える）
   def log_in_as(user)
     session[:user_id] = user.id
   end
 end
 
+# 統合テスト（Integration Test）用のログインヘルパー
 class ActionDispatch::IntegrationTest
-  # テストユーザーとしてログインする
   def log_in_as(user, password: 'password', remember_me: '1')
     post login_path, params: { session: { email: user.email,
                                           password: password,
