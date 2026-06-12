@@ -18,13 +18,14 @@ class UsersController < ApplicationController
     @user = User.new
   end
 
+  # 本番環境でのMailgunエラーを回避するために修正
   def create
     @user = User.new(user_params)
     if @user.save
-      @user.send_activation_email
-      @microposts = @user.microposts.paginate(page: params[:page])
-      flash[:info] = 'Please check your email to activate your account.'
-      redirect_to root_url
+      @user.activate    # 1. データベース上で即座に有効化（activated: true）
+      log_in @user      # 2. そのままセッションを開始（ログイン状態に）
+      flash[:success] = 'Welcome to the Sample App! (Activation Skipped)'
+      redirect_to @user # 3. アカウント有効化が不要になったため、そのままマイページ（show）へ
     else
       render 'new', status: :unprocessable_entity
     end
